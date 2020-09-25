@@ -59,6 +59,8 @@ namespace WebAppProject.Controllers
 
                         //  return RedirectToAction("Home", "Index"); // what is the page that whould open?
                     }
+
+
                         else
                         {
                                 HttpContext.Session.SetString("UserId", objUser.First().UserID.ToString());
