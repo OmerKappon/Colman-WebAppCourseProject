@@ -55,18 +55,21 @@ namespace WebAppProject.Controllers
                             HttpContext.Session.SetString("IsAdmin", "false");
                             HttpContext.Session.SetString("UserId", objUser.First().UserID.ToString());
                             HttpContext.Session.SetString("UserName", objUser.First().UserName.ToString());
+                            HttpContext.Session.SetString("FirstName", objUser.First().FirstName.ToString());
 
-                          //  return RedirectToAction("Home", "Index"); // what is the page that whould open?
-                        }
+                        //  return RedirectToAction("Home", "Index"); // what is the page that whould open?
+                    }
                         else
                         {
                                 HttpContext.Session.SetString("UserId", objUser.First().UserID.ToString());
                                 HttpContext.Session.SetString("UserName", objUser.First().UserName.ToString());
                                 HttpContext.Session.SetString("IsAdmin", "true");
-                               // return RedirectToAction("Index", "AdminInfoes");// what is the page that whould open?
-                        }
+                                HttpContext.Session.SetString("FirstName", objUser.First().FirstName.ToString());
 
-                         return RedirectToAction("Index"); // what is the page that whould open?
+                        // return RedirectToAction("Index", "AdminInfoes");// what is the page that whould open?
+                    }
+
+                    return RedirectToAction("Index"); // what is the page that whould open?
 
 
                       }
@@ -87,29 +90,14 @@ namespace WebAppProject.Controllers
         HttpContext.Session.SetString("UserId", null);
         HttpContext.Session.SetString("UserName", null);
         HttpContext.Session.SetString("IsAdmin", null);
-        return RedirectToAction("Home", "???");   //change 
+        HttpContext.Session.SetString("FirstName", null);
+            return RedirectToAction("Home", "???");   //change 
         }
 
         public ActionResult LogedOff()
         {
             return View();  //change 
         }
-
-
-        [HttpPost]
-        public ActionResult LoggedIn()
-        {
-            if (HttpContext.Session.GetString("UserId") == null)
-            {
-                return View();//change 
-            }
-            else
-            {
-                return RedirectToAction("Home", "Flights");  //change 
-            }
-        }
-
-
 
 
         // GET: Users/Details/5
@@ -166,6 +154,13 @@ namespace WebAppProject.Controllers
         // GET: Users/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
+            var NotLogedIn = ValidateUser(this.HttpContext);
+            if (NotLogedIn != null)
+            {
+                return NotLogedIn; // Redirect to Home/Index
+            }
+
+
             if (id == null)
             {
                 return NotFound();
@@ -186,6 +181,13 @@ namespace WebAppProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("UserID,FirstName,LastName,Email,EnteranceDate,PropertyCity,PropertyStreet,PropertyStreetNumber,ApartmentNumber,IsAdmin,UserName,Password")] User user)
         {
+
+            var NotLogedIn = ValidateUser(this.HttpContext);
+            if (NotLogedIn != null)
+            {
+                return NotLogedIn; // Redirect to Home/Index
+            }
+
             if (id != user.UserID)
             {
                 return NotFound();
@@ -225,6 +227,15 @@ namespace WebAppProject.Controllers
         // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
+
+
+
+            var NotLogedIn = ValidateUser(this.HttpContext);
+            if (NotLogedIn != null)
+            {
+                return NotLogedIn; // Redirect to Home/Index
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -245,6 +256,13 @@ namespace WebAppProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+
+            var NotLogedIn = ValidateUser(this.HttpContext);
+            if (NotLogedIn != null)
+            {
+                return NotLogedIn; // Redirect to Home/Index
+            }
+
             var user = await _context.User.FindAsync(id);
             _context.User.Remove(user);
             await _context.SaveChangesAsync();
@@ -254,6 +272,12 @@ namespace WebAppProject.Controllers
         private bool UserExists(int id)
         {
             return _context.User.Any(e => e.UserID == id);
+        }
+
+
+        public ActionResult ValidateUser (HttpContext context)
+        {
+            return context.Session.GetString("UserName") != null ? null : RedirectToAction("Index", "Home");
         }
     }
 }
